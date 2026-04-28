@@ -1,0 +1,26 @@
+CREATE DATABASE IF NOT EXISTS kos_auth;
+USE kos_auth;
+
+CREATE TABLE IF NOT EXISTS users (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name        VARCHAR(100) NOT NULL,
+  email       VARCHAR(150) UNIQUE NOT NULL,
+  password    VARCHAR(255) NULL,
+  role        ENUM('owner', 'tenant') NOT NULL DEFAULT 'tenant',
+  oauth_provider VARCHAR(50) NULL,
+  oauth_id    VARCHAR(100) NULL,
+  avatar      VARCHAR(500) NULL,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_email (email),
+  INDEX idx_oauth (oauth_provider, oauth_id)
+);
+
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id     INT UNSIGNED NOT NULL,
+  token       TEXT NOT NULL,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
