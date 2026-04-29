@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# CodeIgniter 4
+services/property-service/vendor/
+services/property-service/.env
+services/property-service/writable/cache/*
+services/property-service/writable/logs/*
+services/property-service/writable/session/*
+services/property-service/writable/uploads/*
+!services/property-service/writable/**/.gitkeep
+
+# Build
+dist/
+build/
+
+base.md

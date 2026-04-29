@@ -16,7 +16,27 @@
 
 ## Deskripsi Sistem
 
-Sistem Manajemen Kos / Sewa Properti berbasis microservice yang memungkinkan pemilik properti untuk mengelola listing kamar/properti, dan penyewa untuk melakukan booking serta pembayaran sewa secara online.
+Sistem Manajemen Kos / Sewa Properti berbasis microservice yang memungkinkan pemilik properti mengelola listing kamar/properti, dan penyewa melakukan booking serta pembayaran sewa secara online.
+
+---
+
+## Arsitektur
+
+```
+Client (Postman / Browser)
+        │
+        ▼
+  [ API Gateway :8000 ]
+  Rate Limit + JWT Validation
+        │
+   ┌────┴──────────────────┐
+   │           │           │
+   ▼           ▼           ▼
+Auth Svc   Property Svc  Booking Svc
+:8001       :8002         :8003
+Node.js     CI4 PHP 8.1   Node.js
+MySQL       MySQL         MySQL
+```
 
 ---
 
@@ -24,9 +44,9 @@ Sistem Manajemen Kos / Sewa Properti berbasis microservice yang memungkinkan pem
 
 | Service | Teknologi | Port |
 |---|---|---|
-| API Gateway | Node.js, Express, http-proxy-middleware | 8000 |
+| API Gateway | Node.js, Express, express-http-proxy | 8000 |
 | Auth Service | Node.js, Express, JWT, GitHub OAuth 2.0 | 8001 |
-| Property Service | PHP 8.2, Laravel 11, MySQL | 8002 |
+| Property Service | PHP 8.1, CodeIgniter 4, MySQL | 8002 |
 | Booking Service | Node.js, Express, MySQL (mysql2) | 8003 |
 
 ---
@@ -35,14 +55,13 @@ Sistem Manajemen Kos / Sewa Properti berbasis microservice yang memungkinkan pem
 
 ### Prasyarat
 - Node.js >= 18
-- PHP >= 8.2 + Composer
+- PHP >= 8.1 + Composer
 - MySQL >= 8.0
 
 ### 1. Auth Service
 ```bash
 cd services/auth-service
 cp .env.example .env
-# isi konfigurasi di .env
 npm install
 npm run dev
 ```
@@ -51,18 +70,15 @@ npm run dev
 ```bash
 cd services/property-service
 cp .env.example .env
-# isi konfigurasi di .env
 composer install
-php artisan key:generate
-php artisan migrate
-php artisan serve --port=8002
+php spark migrate
+php spark serve --port=8002
 ```
 
 ### 3. Booking Service
 ```bash
 cd services/booking-service
 cp .env.example .env
-# isi konfigurasi di .env
 npm install
 npm run dev
 ```
@@ -76,3 +92,26 @@ npm run dev
 ```
 
 ---
+
+## Peta Routing Gateway
+
+| Path Prefix | Service | Port |
+|---|---|---|
+| `/api/auth/*` | Auth Service | 8001 |
+| `/api/properties/*` | Property Service | 8002 |
+| `/api/rooms/*` | Property Service | 8002 |
+| `/api/bookings/*` | Booking Service | 8003 |
+
+Lihat detail lengkap di [`docs/arsitektur.md`](docs/arsitektur.md)
+
+---
+
+## Demo Video
+
+> Link YouTube: *(akan diisi)*
+
+---
+
+## Postman Collection
+
+Tersedia di [`postman/collection.json`](postman/collection.json)
