@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * CodeIgniter CLI entry point (php spark ...)
+ */
+
+define('FCPATH', __DIR__ . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR);
+
+$pathsConfig = __DIR__ . '/vendor/codeigniter4/framework/system';
+
+define('SYSTEMPATH', rtrim($pathsConfig, '/\\') . DIRECTORY_SEPARATOR);
+define('APPPATH', realpath(rtrim(__DIR__ . '/app', '/\\')) . DIRECTORY_SEPARATOR);
+define('ROOTPATH', realpath(APPPATH . '../') . DIRECTORY_SEPARATOR);
+define('WRITEPATH', ROOTPATH . 'writable' . DIRECTORY_SEPARATOR);
+
+require SYSTEMPATH . 'bootstrap.php';
+
+$app = \Config\Services::codeigniter();
+$app->initialize();
+\CodeIgniter\Boot::bootSpark($app);
