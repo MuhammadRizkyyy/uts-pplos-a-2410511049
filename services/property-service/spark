@@ -1,21 +1,24 @@
 #!/usr/bin/env php
 <?php
 
-/**
- * CodeIgniter CLI entry point (php spark ...)
- */
+use CodeIgniter\Boot;
+use Config\Paths;
+
+if (str_starts_with(PHP_SAPI, 'cgi')) {
+    exit("The cli tool is not supported when running php-cgi. It needs php-cli to function!\n\n");
+}
+
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
 
 define('FCPATH', __DIR__ . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR);
 
-$pathsConfig = __DIR__ . '/vendor/codeigniter4/framework/system';
+chdir(FCPATH);
 
-define('SYSTEMPATH', rtrim($pathsConfig, '/\\') . DIRECTORY_SEPARATOR);
-define('APPPATH', realpath(rtrim(__DIR__ . '/app', '/\\')) . DIRECTORY_SEPARATOR);
-define('ROOTPATH', realpath(APPPATH . '../') . DIRECTORY_SEPARATOR);
-define('WRITEPATH', ROOTPATH . 'writable' . DIRECTORY_SEPARATOR);
+require FCPATH . '../app/Config/Paths.php';
 
-require SYSTEMPATH . 'bootstrap.php';
+$paths = new Paths();
 
-$app = \Config\Services::codeigniter();
-$app->initialize();
-\CodeIgniter\Boot::bootSpark($app);
+require $paths->systemDirectory . '/Boot.php';
+
+exit(Boot::bootSpark($paths));

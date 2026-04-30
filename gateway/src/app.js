@@ -7,13 +7,11 @@ const routes = require('./routes');
 
 const app = express();
 
-// Global middleware
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(rateLimiter);
 
-// Health check
 app.get('/health', (_req, res) => {
   res.json({
     status: 'OK',
@@ -22,10 +20,8 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// Routes
 app.use(routes);
 
-// Error handling (harus di paling bawah)
 app.use(notFound);
 app.use(errorHandler);
 

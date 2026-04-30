@@ -5,10 +5,6 @@ namespace App\Services;
 use App\Models\PropertyModel;
 use App\Models\RoomModel;
 
-/**
- * PropertyService
- * Controller hanya menangani HTTP request/response,
- */
 class PropertyService
 {
     protected PropertyModel $propertyModel;
@@ -20,43 +16,26 @@ class PropertyService
         $this->roomModel     = new RoomModel();
     }
 
-    /**
-     * Ambil list properti dengan filtering dan paging.
-     */
     public function getAll(array $filters, int $page, int $perPage): array
     {
         $model = $this->propertyModel;
 
-        if (!empty($filters['city'])) {
-            $model->like('city', $filters['city']);
-        }
-        if (!empty($filters['type'])) {
-            $model->where('type', $filters['type']);
-        }
-        if (isset($filters['is_active'])) {
-            $model->where('is_active', $filters['is_active']);
-        }
-        if (!empty($filters['owner_id'])) {
-            $model->where('owner_id', $filters['owner_id']);
-        }
+        if (!empty($filters['city']))     $model->like('city', $filters['city']);
+        if (!empty($filters['type']))     $model->where('type', $filters['type']);
+        if (isset($filters['is_active'])) $model->where('is_active', $filters['is_active']);
+        if (!empty($filters['owner_id'])) $model->where('owner_id', $filters['owner_id']);
 
         $properties = $model->paginate($perPage, 'default', $page);
         $total      = $model->pager->getTotal();
-
         $properties = array_map([$this->propertyModel, 'decodeJson'], $properties);
 
         return compact('properties', 'total');
     }
 
-    /**
-     * Ambil detail properti beserta rooms-nya.
-     */
     public function getById(int $id): ?array
     {
         $property = $this->propertyModel->find($id);
-        if (!$property) {
-            return null;
-        }
+        if (!$property) return null;
 
         $rooms             = $this->roomModel->where('property_id', $id)->findAll();
         $rooms             = array_map([$this->roomModel, 'decodeJson'], $rooms);
@@ -75,26 +54,17 @@ class PropertyService
         }
 
         $id = $this->propertyModel->insert($data);
-        if (!$id) {
-            return ['errors' => ['db' => 'Failed to create property']];
-        }
+        if (!$id) return ['errors' => ['db' => 'Failed to create property']];
 
         return ['property' => $this->propertyModel->decodeJson($this->propertyModel->find($id))];
     }
 
-    /**
-     * Update properti. Cek kepemilikan sebelum update.
-     */
     public function update(int $id, array $data, string $userId): array
     {
         $property = $this->propertyModel->find($id);
-        if (!$property) {
-            return ['notFound' => true];
-        }
+        if (!$property) return ['notFound' => true];
 
-        if ((string) $property['owner_id'] !== $userId) {
-            return ['forbidden' => true];
-        }
+        if ((string) $property['owner_id'] !== $userId) return ['forbidden' => true];
 
         if (!$this->propertyModel->update($id, $data)) {
             return ['errors' => $this->propertyModel->errors()];
@@ -103,19 +73,12 @@ class PropertyService
         return ['property' => $this->propertyModel->decodeJson($this->propertyModel->find($id))];
     }
 
-    /**
-     * Hapus properti. Cek kepemilikan sebelum hapus.
-     */
     public function delete(int $id, string $userId): array
     {
         $property = $this->propertyModel->find($id);
-        if (!$property) {
-            return ['notFound' => true];
-        }
+        if (!$property) return ['notFound' => true];
 
-        if ((string) $property['owner_id'] !== $userId) {
-            return ['forbidden' => true];
-        }
+        if ((string) $property['owner_id'] !== $userId) return ['forbidden' => true];
 
         $this->propertyModel->delete($id);
         return ['deleted' => true];

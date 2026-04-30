@@ -5,12 +5,6 @@ namespace App\Controllers;
 use App\Services\RoomService;
 use CodeIgniter\RESTful\ResourceController;
 
-/**
- * RoomController
- *
- * Hanya bertanggung jawab atas HTTP request/response.
- * Semua logika bisnis didelegasikan ke RoomService.
- */
 class RoomController extends ResourceController
 {
     protected $format = 'json';
@@ -21,9 +15,6 @@ class RoomController extends ResourceController
         $this->service = new RoomService();
     }
 
-    /**
-     * GET /api/properties/:propertyId/rooms
-     */
     public function index($propertyId = null)
     {
         $page    = (int) ($this->request->getGet('page') ?? 1);
@@ -48,9 +39,6 @@ class RoomController extends ResourceController
         ]);
     }
 
-    /**
-     * POST /api/properties/:propertyId/rooms
-     */
     public function create($propertyId = null)
     {
         $userId = $this->request->getHeaderLine('X-User-Id');
@@ -64,9 +52,6 @@ class RoomController extends ResourceController
         return $this->respondCreated($result['room']);
     }
 
-    /**
-     * GET /api/rooms/:id
-     */
     public function show($id = null)
     {
         $room = $this->service->getById((int) $id);
@@ -78,9 +63,6 @@ class RoomController extends ResourceController
         return $this->respond($room);
     }
 
-    /**
-     * PUT/PATCH /api/rooms/:id
-     */
     public function update($id = null)
     {
         $userId = $this->request->getHeaderLine('X-User-Id');
@@ -94,9 +76,6 @@ class RoomController extends ResourceController
         return $this->respond($result['room']);
     }
 
-    /**
-     * DELETE /api/rooms/:id
-     */
     public function delete($id = null)
     {
         $userId = $this->request->getHeaderLine('X-User-Id');

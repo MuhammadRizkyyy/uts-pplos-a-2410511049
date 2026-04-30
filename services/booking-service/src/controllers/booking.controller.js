@@ -1,7 +1,6 @@
 const axios = require('axios');
 const { findAll, findById, create, updateStatus } = require('../models/booking.model');
 
-// GET /api/bookings
 const index = async (req, res) => {
   try {
     const { page = 1, per_page = 10, status } = req.query;
@@ -19,7 +18,6 @@ const index = async (req, res) => {
   }
 };
 
-// POST /api/bookings
 const store = async (req, res) => {
   try {
     const { roomId, startDate, endDate, notes } = req.body;
@@ -63,7 +61,6 @@ const store = async (req, res) => {
   }
 };
 
-// GET /api/bookings/:id
 const show = async (req, res) => {
   try {
     const booking = await findById(req.params.id);
@@ -86,7 +83,6 @@ const show = async (req, res) => {
   }
 };
 
-// PATCH /api/bookings/:id/status
 const patchStatus = async (req, res) => {
   try {
     const { status } = req.body;

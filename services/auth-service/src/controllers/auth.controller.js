@@ -11,7 +11,6 @@ const {
 } = require('../models/user.model');
 const { generateAccessToken, generateRefreshToken, verifyToken } = require('../config/jwt');
 
-// POST /api/auth/register
 const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -31,7 +30,6 @@ const register = async (req, res) => {
   }
 };
 
-// POST /api/auth/login
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -63,7 +61,6 @@ const login = async (req, res) => {
   }
 };
 
-// POST /api/auth/refresh
 const refresh = async (req, res) => {
   try {
     const { refreshToken } = req.body;
@@ -91,7 +88,6 @@ const refresh = async (req, res) => {
   }
 };
 
-// POST /api/auth/logout
 const logout = async (req, res) => {
   try {
     const { refreshToken } = req.body;
@@ -105,7 +101,6 @@ const logout = async (req, res) => {
   }
 };
 
-// GET /api/auth/me
 const me = async (req, res) => {
   try {
     const user = await findById(req.user.userId);
@@ -120,7 +115,6 @@ const me = async (req, res) => {
   }
 };
 
-// GET /api/auth/oauth/github
 const githubRedirect = (req, res) => {
   const params = new URLSearchParams({
     client_id: process.env.GITHUB_CLIENT_ID,
@@ -130,7 +124,6 @@ const githubRedirect = (req, res) => {
   res.redirect(`https://github.com/login/oauth/authorize?${params}`);
 };
 
-// GET /api/auth/oauth/github/callback
 const githubCallback = async (req, res) => {
   try {
     const { code } = req.query;

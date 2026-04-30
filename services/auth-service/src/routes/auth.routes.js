@@ -13,7 +13,6 @@ const {
 const { authenticate } = require('../middleware/auth.middleware');
 const validate = require('../middleware/validate.middleware');
 
-// Register
 router.post(
   '/register',
   [
@@ -26,7 +25,6 @@ router.post(
   register
 );
 
-// Login
 router.post(
   '/login',
   [
@@ -37,16 +35,9 @@ router.post(
   login
 );
 
-// Refresh Token
 router.post('/refresh', refresh);
-
-// Logout
 router.post('/logout', logout);
-
-// Get current user (protected)
 router.get('/me', authenticate, me);
-
-// GitHub OAuth
 router.get('/oauth/github', githubRedirect);
 router.get('/oauth/github/callback', githubCallback);
 

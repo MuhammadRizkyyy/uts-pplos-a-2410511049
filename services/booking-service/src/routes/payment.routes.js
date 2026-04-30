@@ -7,13 +7,9 @@ const validate = require('../middleware/validate.middleware');
 
 router.use(authenticate);
 
-// Payment history
 router.get('/payments/history', history);
-
-// List payments for a booking
 router.get('/:bookingId/payments', index);
 
-// Create payment
 router.post(
   '/:bookingId/payments',
   [

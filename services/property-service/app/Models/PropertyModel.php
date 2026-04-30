@@ -14,16 +14,8 @@ class PropertyModel extends Model
     protected $protectFields    = true;
 
     protected $allowedFields = [
-        'owner_id',
-        'name',
-        'description',
-        'address',
-        'city',
-        'province',
-        'type',
-        'facilities',
-        'rules',
-        'is_active',
+        'owner_id', 'name', 'description', 'address',
+        'city', 'province', 'type', 'facilities', 'rules', 'is_active',
     ];
 
     protected $useTimestamps = true;
@@ -39,14 +31,12 @@ class PropertyModel extends Model
     ];
 
     protected $validationMessages = [
-        'type' => [
-            'in_list' => 'Type must be kos, kontrakan, or apartemen',
-        ],
+        'type' => ['in_list' => 'Type must be kos, kontrakan, or apartemen'],
     ];
 
-    /**
-     * Encode array fields ke JSON sebelum disimpan.
-     */
+    protected $beforeInsert = ['encodeJson'];
+    protected $beforeUpdate = ['encodeJson'];
+
     protected function encodeJson(array $data): array
     {
         foreach (['facilities', 'rules'] as $field) {
@@ -57,9 +47,6 @@ class PropertyModel extends Model
         return $data;
     }
 
-    /**
-     * Decode JSON fields setelah diambil dari DB.
-     */
     public function decodeJson(array $row): array
     {
         foreach (['facilities', 'rules'] as $field) {
@@ -69,7 +56,4 @@ class PropertyModel extends Model
         }
         return $row;
     }
-
-    protected $beforeInsert = ['encodeJson'];
-    protected $beforeUpdate = ['encodeJson'];
 }

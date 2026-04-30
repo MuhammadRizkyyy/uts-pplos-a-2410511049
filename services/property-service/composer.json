@@ -33,6 +33,10 @@
         "sort-packages": true,
         "allow-plugins": {
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": ["PKSA-y2cr-5h3j-g3ys"],
+            "abandoned": "ignore"
         }
     },
     "minimum-stability": "stable",

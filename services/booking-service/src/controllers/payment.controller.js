@@ -1,7 +1,6 @@
 const { findById: findPaymentById, findByBookingId, create, findHistory } = require('../models/payment.model');
 const { findById: findBookingById } = require('../models/booking.model');
 
-// POST /api/bookings/:bookingId/payments
 const store = async (req, res) => {
   try {
     const { amount, method, notes } = req.body;
@@ -32,7 +31,6 @@ const store = async (req, res) => {
   }
 };
 
-// GET /api/bookings/:bookingId/payments
 const index = async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -55,7 +53,6 @@ const index = async (req, res) => {
   }
 };
 
-// GET /api/bookings/payments/history
 const history = async (req, res) => {
   try {
     const { page = 1, per_page = 10 } = req.query;

@@ -14,14 +14,8 @@ class RoomModel extends Model
     protected $protectFields    = true;
 
     protected $allowedFields = [
-        'property_id',
-        'room_number',
-        'type',
-        'price_per_month',
-        'size_sqm',
-        'facilities',
-        'status',
-        'description',
+        'property_id', 'room_number', 'type',
+        'price_per_month', 'size_sqm', 'facilities', 'status', 'description',
     ];
 
     protected $useTimestamps = true;
@@ -34,9 +28,9 @@ class RoomModel extends Model
         'price_per_month' => 'required|decimal|greater_than[0]',
     ];
 
-    /**
-     * Encode array fields ke JSON sebelum disimpan.
-     */
+    protected $beforeInsert = ['encodeJson'];
+    protected $beforeUpdate = ['encodeJson'];
+
     protected function encodeJson(array $data): array
     {
         if (isset($data['data']['facilities']) && is_array($data['data']['facilities'])) {
@@ -45,9 +39,6 @@ class RoomModel extends Model
         return $data;
     }
 
-    /**
-     * Decode JSON fields setelah diambil dari DB.
-     */
     public function decodeJson(array $row): array
     {
         if (isset($row['facilities']) && is_string($row['facilities'])) {
@@ -55,7 +46,4 @@ class RoomModel extends Model
         }
         return $row;
     }
-
-    protected $beforeInsert = ['encodeJson'];
-    protected $beforeUpdate = ['encodeJson'];
 }

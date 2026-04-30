@@ -18,11 +18,9 @@ db.getConnection()
   .then(() => console.log('Database connected'))
   .catch((err) => console.error('Database connection failed:', err.message));
 
-// Routes
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/bookings', paymentRoutes);
 
-// Health Check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', service: 'Booking Service' });
 });
@@ -31,7 +29,6 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Internal server error' });

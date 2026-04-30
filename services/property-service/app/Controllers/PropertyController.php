@@ -5,12 +5,6 @@ namespace App\Controllers;
 use App\Services\PropertyService;
 use CodeIgniter\RESTful\ResourceController;
 
-/**
- * PropertyController
- *
- * Hanya bertanggung jawab atas HTTP request/response.
- * Semua logika bisnis didelegasikan ke PropertyService.
- */
 class PropertyController extends ResourceController
 {
     protected $format = 'json';
@@ -21,9 +15,6 @@ class PropertyController extends ResourceController
         $this->service = new PropertyService();
     }
 
-    /**
-     * GET /api/properties
-     */
     public function index()
     {
         $page    = (int) ($this->request->getGet('page') ?? 1);
@@ -46,9 +37,6 @@ class PropertyController extends ResourceController
         ]);
     }
 
-    /**
-     * POST /api/properties
-     */
     public function create()
     {
         $userId = $this->request->getHeaderLine('X-User-Id');
@@ -68,9 +56,6 @@ class PropertyController extends ResourceController
         return $this->respondCreated($result['property']);
     }
 
-    /**
-     * GET /api/properties/:id
-     */
     public function show($id = null)
     {
         $property = $this->service->getById((int) $id);
@@ -82,9 +67,6 @@ class PropertyController extends ResourceController
         return $this->respond($property);
     }
 
-    /**
-     * PUT/PATCH /api/properties/:id
-     */
     public function update($id = null)
     {
         $userId = $this->request->getHeaderLine('X-User-Id');
@@ -98,9 +80,6 @@ class PropertyController extends ResourceController
         return $this->respond($result['property']);
     }
 
-    /**
-     * DELETE /api/properties/:id
-     */
     public function delete($id = null)
     {
         $userId = $this->request->getHeaderLine('X-User-Id');

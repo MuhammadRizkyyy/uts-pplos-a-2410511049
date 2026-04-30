@@ -1,9 +1,5 @@
 const jwt = require('jsonwebtoken');
 
-/**
- * Verifikasi JWT dari Authorization header.
- * Jika valid, inject req.user dan teruskan ke proxy.
- */
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 

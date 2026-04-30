@@ -5,9 +5,6 @@ const services = require('../config/services');
 
 const router = Router();
 
-/**
- * Inject user info ke header sebelum diteruskan ke booking-service.
- */
 const injectUserHeaders = (proxyReqOpts, srcReq) => {
   proxyReqOpts.headers['X-User-Id'] = srcReq.user.userId;
   proxyReqOpts.headers['X-User-Role'] = srcReq.user.role;
