@@ -25,7 +25,6 @@ const register = async (req, res) => {
 
     return res.status(201).json({ message: 'User registered successfully', userId });
   } catch (error) {
-    console.error('Register error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -56,7 +55,6 @@ const login = async (req, res) => {
       user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
     });
   } catch (error) {
-    console.error('Login error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -83,7 +81,6 @@ const refresh = async (req, res) => {
 
     return res.status(200).json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
   } catch (error) {
-    console.error('Refresh error:', error);
     return res.status(401).json({ error: 'Invalid or expired refresh token' });
   }
 };
@@ -96,7 +93,6 @@ const logout = async (req, res) => {
     }
     return res.status(204).send();
   } catch (error) {
-    console.error('Logout error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -110,7 +106,6 @@ const me = async (req, res) => {
     const { password, ...userData } = user;
     return res.status(200).json(userData);
   } catch (error) {
-    console.error('Me error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -141,7 +136,17 @@ const githubCallback = async (req, res) => {
       { headers: { Accept: 'application/json' } }
     );
 
+    if (tokenResponse.data.error) {
+      return res.status(400).json({
+        error: 'GitHub OAuth failed',
+        details: tokenResponse.data.error_description || tokenResponse.data.error,
+      });
+    }
+
     const githubAccessToken = tokenResponse.data.access_token;
+    if (!githubAccessToken) {
+      return res.status(400).json({ error: 'Failed to get access token from GitHub' });
+    }
 
     const [userResponse, emailResponse] = await Promise.all([
       axios.get('https://api.github.com/user', {
@@ -182,7 +187,6 @@ const githubCallback = async (req, res) => {
       user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
     });
   } catch (error) {
-    console.error('GitHub OAuth error:', error);
     return res.status(500).json({ error: 'OAuth authentication failed' });
   }
 };
