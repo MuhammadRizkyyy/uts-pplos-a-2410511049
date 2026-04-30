@@ -1,0 +1,1250 @@
+openapi: 3.1.0
+info:
+  title: Sistem Manajemen Kos API
+  version: 1.0.0
+  description: |
+    API untuk Sistem Manajemen Kos - UTS PPLOS Semester Genap 2025/2026
+    
+    **Muhammad Rizky - 2410511049 - Kelas A**
+    
+    ## Arsitektur
+    Sistem ini menggunakan arsitektur microservices dengan 3 service utama:
+    - **Auth Service** (Node.js) - JWT & GitHub OAuth
+    - **Property Service** (PHP CodeIgniter 4) - Manajemen properti & kamar
+    - **Booking Service** (Node.js) - Booking & pembayaran
+    
+    Semua request melalui **API Gateway** di port 8000.
+    
+    ## Autentikasi
+    Gunakan Bearer token di header Authorization:
+    ```
+    Authorization: Bearer <your_access_token>
+    ```
+    
+    Access token berlaku 15 menit, refresh token 7 hari.
+    
+  contact:
+    name: Muhammad Rizky
+    email: rizky@example.com
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Development Server (API Gateway)
+
+tags:
+  - name: Authentication
+    description: Autentikasi JWT & GitHub OAuth
+  - name: Properties
+    description: Manajemen properti kos
+  - name: Rooms
+    description: Manajemen kamar
+  - name: Bookings
+    description: Manajemen booking
+  - name: Payments
+    description: Manajemen pembayaran
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token dari endpoint login
+  
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error message
+    
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Budi Owner
+        email:
+          type: string
+          example: owner@test.com
+        role:
+          type: string
+          enum: [owner, tenant]
+          example: owner
+        avatar:
+          type: string
+          nullable: true
+          example: https://avatars.githubusercontent.com/u/123456
+        created_at:
+          type: string
+          format: date-time
+    
+    Property:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        owner_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Kos Melati
+        address:
+          type: string
+          example: Jl. Melati No. 10
+        city:
+          type: string
+          example: Jakarta Selatan
+        province:
+          type: string
+          example: DKI Jakarta
+        type:
+          type: string
+          enum: [kos, apartment, house]
+          example: kos
+        description:
+          type: string
+          nullable: true
+          example: Kos nyaman dekat kampus
+        facilities:
+          type: array
+          items:
+            type: string
+          example: ["wifi", "ac", "parkir"]
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+    
+    Room:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        property_id:
+          type: integer
+          example: 1
+        room_number:
+          type: string
+          example: A01
+        type:
+          type: string
+          enum: [standard, deluxe, suite]
+          example: standard
+        price_per_month:
+          type: number
+          format: decimal
+          example: 1500000
+        size_sqm:
+          type: number
+          format: decimal
+          example: 12
+        status:
+          type: string
+          enum: [available, occupied, maintenance]
+          example: available
+        facilities:
+          type: array
+          items:
+            type: string
+          example: ["kasur", "lemari", "meja"]
+        description:
+          type: string
+          nullable: true
+          example: Kamar standar lantai 1
+        property:
+          $ref: '#/components/schemas/Property'
+    
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        tenant_id:
+          type: integer
+          example: 2
+        owner_id:
+          type: integer
+          example: 1
+        property_id:
+          type: integer
+          example: 1
+        room_id:
+          type: integer
+          example: 1
+        start_date:
+          type: string
+          format: date
+          example: "2026-05-01"
+        end_date:
+          type: string
+          format: date
+          example: "2026-08-01"
+        total_price:
+          type: number
+          format: decimal
+          example: 4500000
+        status:
+          type: string
+          enum: [pending, confirmed, active, completed, cancelled]
+          example: pending
+        notes:
+          type: string
+          nullable: true
+          example: Mohon konfirmasi secepatnya
+        created_at:
+          type: string
+          format: date-time
+    
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        booking_id:
+          type: integer
+          example: 1
+        amount:
+          type: number
+          format: decimal
+          example: 1500000
+        method:
+          type: string
+          enum: [transfer, cash, ewallet]
+          example: transfer
+        status:
+          type: string
+          enum: [pending, completed, failed]
+          example: completed
+        notes:
+          type: string
+          nullable: true
+          example: Pembayaran bulan Mei 2026
+        created_at:
+          type: string
+          format: date-time
+
+paths:
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register user baru
+      description: Registrasi user dengan role owner atau tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - role
+              properties:
+                name:
+                  type: string
+                  example: Budi Owner
+                email:
+                  type: string
+                  format: email
+                  example: owner@test.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: password123
+                role:
+                  type: string
+                  enum: [owner, tenant]
+                  example: owner
+      responses:
+        '201':
+          description: User berhasil didaftarkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User registered successfully
+                  userId:
+                    type: integer
+                    example: 1
+        '409':
+          description: Email sudah terdaftar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validasi error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login dengan email & password
+      description: Login dan dapatkan access token + refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: owner@test.com
+                password:
+                  type: string
+                  format: password
+                  example: password123
+      responses:
+        '200':
+          description: Login berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Kredensial tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Dapatkan access token baru menggunakan refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: Token berhasil di-refresh
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        '401':
+          description: Refresh token tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout
+      description: Invalidate refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '204':
+          description: Logout berhasil
+
+  /api/auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      description: Dapatkan informasi user yang sedang login
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Data user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/oauth/github:
+    get:
+      tags:
+        - Authentication
+      summary: GitHub OAuth - Step 1
+      description: Redirect ke GitHub untuk authorize. Buka di browser!
+      responses:
+        '302':
+          description: Redirect ke GitHub
+
+  /api/auth/oauth/github/callback:
+    get:
+      tags:
+        - Authentication
+      summary: GitHub OAuth - Step 2
+      description: Callback dari GitHub setelah authorize
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Authorization code dari GitHub
+      responses:
+        '200':
+          description: Login berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  /api/properties:
+    get:
+      tags:
+        - Properties
+      summary: List semua properti
+      description: Dapatkan daftar properti dengan paging & filter
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Halaman
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Jumlah per halaman
+        - name: city
+          in: query
+          schema:
+            type: string
+          description: Filter berdasarkan kota
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [kos, apartment, house]
+          description: Filter berdasarkan tipe
+      responses:
+        '200':
+          description: List properti
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Property'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  per_page:
+                    type: integer
+    
+    post:
+      tags:
+        - Properties
+      summary: Buat properti baru
+      description: Owner membuat properti baru
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - address
+                - city
+                - province
+                - type
+              properties:
+                name:
+                  type: string
+                  example: Kos Melati
+                address:
+                  type: string
+                  example: Jl. Melati No. 10
+                city:
+                  type: string
+                  example: Jakarta Selatan
+                province:
+                  type: string
+                  example: DKI Jakarta
+                type:
+                  type: string
+                  enum: [kos, apartment, house]
+                  example: kos
+                description:
+                  type: string
+                  example: Kos nyaman dekat kampus
+                facilities:
+                  type: array
+                  items:
+                    type: string
+                  example: ["wifi", "ac", "parkir"]
+      responses:
+        '201':
+          description: Properti berhasil dibuat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+        '403':
+          description: Hanya owner yang bisa membuat properti
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/properties/{id}:
+    get:
+      tags:
+        - Properties
+      summary: Detail properti
+      description: Dapatkan detail properti berdasarkan ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Property ID
+      responses:
+        '200':
+          description: Detail properti
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+        '404':
+          description: Properti tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Properties
+      summary: Update properti
+      description: Owner update properti miliknya
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                description:
+                  type: string
+                facilities:
+                  type: array
+                  items:
+                    type: string
+                is_active:
+                  type: boolean
+      responses:
+        '200':
+          description: Properti berhasil diupdate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+        '403':
+          description: Forbidden - bukan pemilik properti
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Properti tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Properties
+      summary: Hapus properti
+      description: Owner hapus properti miliknya
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Properti berhasil dihapus
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Property deleted
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Properti tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/properties/{propertyId}/rooms:
+    get:
+      tags:
+        - Rooms
+      summary: List kamar di properti
+      description: Dapatkan daftar kamar berdasarkan properti
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: propertyId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [available, occupied, maintenance]
+          description: Filter berdasarkan status
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List kamar
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Room'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  per_page:
+                    type: integer
+    
+    post:
+      tags:
+        - Rooms
+      summary: Buat kamar baru
+      description: Owner menambah kamar di propertinya
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: propertyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - room_number
+                - type
+                - price_per_month
+                - size_sqm
+              properties:
+                room_number:
+                  type: string
+                  example: A01
+                type:
+                  type: string
+                  enum: [standard, deluxe, suite]
+                  example: standard
+                price_per_month:
+                  type: number
+                  example: 1500000
+                size_sqm:
+                  type: number
+                  example: 12
+                facilities:
+                  type: array
+                  items:
+                    type: string
+                  example: ["kasur", "lemari", "meja"]
+                description:
+                  type: string
+                  example: Kamar standar lantai 1
+      responses:
+        '201':
+          description: Kamar berhasil dibuat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/rooms/{id}:
+    get:
+      tags:
+        - Rooms
+      summary: Detail kamar
+      description: Dapatkan detail kamar berdasarkan ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail kamar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '404':
+          description: Kamar tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - Rooms
+      summary: Update kamar
+      description: Owner update kamar miliknya
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                room_number:
+                  type: string
+                type:
+                  type: string
+                  enum: [standard, deluxe, suite]
+                price_per_month:
+                  type: number
+                size_sqm:
+                  type: number
+                status:
+                  type: string
+                  enum: [available, occupied, maintenance]
+                facilities:
+                  type: array
+                  items:
+                    type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Kamar berhasil diupdate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Kamar tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      tags:
+        - Rooms
+      summary: Hapus kamar
+      description: Owner hapus kamar miliknya
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Kamar berhasil dihapus
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Room deleted
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Kamar tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/bookings:
+    get:
+      tags:
+        - Bookings
+      summary: List booking
+      description: |
+        Dapatkan daftar booking:
+        - Tenant: hanya booking miliknya
+        - Owner: booking properti miliknya
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, active, completed, cancelled]
+          description: Filter berdasarkan status
+      responses:
+        '200':
+          description: List booking
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Booking'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  per_page:
+                    type: integer
+    
+    post:
+      tags:
+        - Bookings
+      summary: Buat booking baru
+      description: Tenant membuat booking kamar
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - roomId
+                - startDate
+                - endDate
+              properties:
+                roomId:
+                  type: integer
+                  example: 1
+                startDate:
+                  type: string
+                  format: date
+                  example: "2026-05-01"
+                endDate:
+                  type: string
+                  format: date
+                  example: "2026-08-01"
+                notes:
+                  type: string
+                  example: Mohon konfirmasi secepatnya
+      responses:
+        '201':
+          description: Booking berhasil dibuat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '404':
+          description: Kamar tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Kamar tidak tersedia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/bookings/{id}:
+    get:
+      tags:
+        - Bookings
+      summary: Detail booking
+      description: Dapatkan detail booking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail booking
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Booking tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/bookings/{id}/status:
+    patch:
+      tags:
+        - Bookings
+      summary: Update status booking
+      description: Owner mengubah status booking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, confirmed, active, completed, cancelled]
+                  example: confirmed
+      responses:
+        '200':
+          description: Status berhasil diupdate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Status updated
+                  status:
+                    type: string
+                    example: confirmed
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Booking tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Status tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/bookings/{bookingId}/payments:
+    get:
+      tags:
+        - Payments
+      summary: List pembayaran booking
+      description: Dapatkan daftar pembayaran untuk booking tertentu
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List pembayaran
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Booking tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      tags:
+        - Payments
+      summary: Buat pembayaran
+      description: Tenant membuat pembayaran untuk booking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+                - method
+              properties:
+                amount:
+                  type: number
+                  example: 1500000
+                method:
+                  type: string
+                  enum: [transfer, cash, ewallet]
+                  example: transfer
+                notes:
+                  type: string
+                  example: Pembayaran bulan Mei 2026
+      responses:
+        '201':
+          description: Pembayaran berhasil dibuat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Booking tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Method tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/bookings/payments/history:
+    get:
+      tags:
+        - Payments
+      summary: Riwayat pembayaran
+      description: Dapatkan riwayat pembayaran tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Riwayat pembayaran
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Payment'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  per_page:
+                    type: integer

@@ -1,0 +1,34 @@
+{
+  "name": "uts-pplos-sistem-manajemen-kos",
+  "version": "1.0.0",
+  "description": "Sistem Manajemen Kos - Microservices Architecture",
+  "author": "Muhammad Rizky - 2410511049",
+  "license": "MIT",
+  "scripts": {
+    "docs": "npx @scalar/cli reference docs/openapi.yaml --port 5050",
+    "docs:open": "npm run docs",
+    "start:auth": "cd services/auth-service && npm run dev",
+    "start:property": "cd services/property-service && php spark serve --port=8002",
+    "start:booking": "cd services/booking-service && npm run dev",
+    "start:gateway": "cd gateway && npm run dev",
+    "install:all": "npm run install:auth && npm run install:booking && npm run install:gateway && npm run install:property",
+    "install:auth": "cd services/auth-service && npm install",
+    "install:booking": "cd services/booking-service && npm install",
+    "install:gateway": "cd gateway && npm install",
+    "install:property": "cd services/property-service && composer install"
+  },
+  "keywords": [
+    "microservices",
+    "api-gateway",
+    "jwt",
+    "oauth",
+    "rest-api",
+    "nodejs",
+    "php",
+    "codeigniter"
+  ],
+  "devDependencies": {
+    "@scalar/cli": "^0.2.0",
+    "serve": "^14.2.1"
+  }
+}
