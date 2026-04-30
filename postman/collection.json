@@ -7,7 +7,10 @@
   "variable": [
     { "key": "base_url", "value": "http://localhost:8000" },
     { "key": "access_token", "value": "" },
-    { "key": "refresh_token", "value": "" }
+    { "key": "refresh_token", "value": "" },
+    { "key": "property_id", "value": "1" },
+    { "key": "room_id", "value": "1" },
+    { "key": "booking_id", "value": "1" }
   ],
   "item": [
     {
@@ -15,9 +18,27 @@
       "item": [
         {
           "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    console.log('User registered successfully');",
+                  "    console.log('Please use Login request to get tokens');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/api/auth/register",
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
@@ -26,22 +47,33 @@
           }
         },
         {
-          "name": "Register (Owner)",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/api/auth/register",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Pemilik Kos\",\n  \"email\": \"owner@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"owner\"\n}"
-            }
-          }
-        },
-        {
           "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.accessToken) {",
+                  "        pm.collectionVariables.set('access_token', response.accessToken);",
+                  "        pm.collectionVariables.set('refresh_token', response.refreshToken);",
+                  "        console.log('✅ Tokens saved from login');",
+                  "        console.log('Access Token:', response.accessToken.substring(0, 20) + '...');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/api/auth/login",
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
@@ -50,42 +82,111 @@
           }
         },
         {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
+          }
+        },
+        {
           "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.accessToken) {",
+                  "        pm.collectionVariables.set('access_token', response.accessToken);",
+                  "        pm.collectionVariables.set('refresh_token', response.refreshToken);",
+                  "        console.log('✅ Access token refreshed');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/api/auth/refresh",
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "refresh"]
+            },
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
             }
+          }
+        },
+        {
+          "name": "GitHub OAuth - Step 1: Get Authorization URL",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/oauth/github",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "oauth", "github"]
+            },
+            "description": "⚠️ MANUAL STEP: Open this URL in browser to authorize with GitHub.\nAfter authorization, GitHub will redirect to callback URL with 'code' parameter.\nCopy the 'code' from URL and use it in Step 2."
+          }
+        },
+        {
+          "name": "GitHub OAuth - Step 2: Exchange Code for Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.accessToken) {",
+                  "        pm.collectionVariables.set('access_token', response.accessToken);",
+                  "        pm.collectionVariables.set('refresh_token', response.refreshToken);",
+                  "        console.log('✅ GitHub OAuth successful - Tokens saved');",
+                  "        console.log('User:', response.user.name, '(' + response.user.email + ')');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/oauth/github/callback?code=YOUR_GITHUB_CODE_HERE",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "oauth", "github", "callback"],
+              "query": [
+                { "key": "code", "value": "YOUR_GITHUB_CODE_HERE", "description": "Replace with actual code from GitHub redirect" }
+              ]
+            },
+            "description": "Replace YOUR_GITHUB_CODE_HERE with the actual code from GitHub OAuth redirect URL"
           }
         },
         {
           "name": "Logout",
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/api/auth/logout",
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
             }
-          }
-        },
-        {
-          "name": "Get Me",
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/api/auth/me",
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
-          }
-        },
-        {
-          "name": "GitHub OAuth Redirect",
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/api/auth/oauth/github"
           }
         }
       ]
@@ -94,26 +195,31 @@
       "name": "Properties",
       "item": [
         {
-          "name": "List Properties",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/properties?page=1&per_page=10&city=Jakarta&type=kos",
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "per_page", "value": "10" },
-                { "key": "city", "value": "Jakarta" },
-                { "key": "type", "value": "kos" }
-              ]
-            },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
-          }
-        },
-        {
           "name": "Create Property",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.id) {",
+                  "        pm.collectionVariables.set('property_id', response.data.id);",
+                  "        console.log('Property ID saved: ' + response.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/api/properties",
+            "url": {
+              "raw": "{{base_url}}/api/properties",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties"]
+            },
             "header": [
               { "key": "Authorization", "value": "Bearer {{access_token}}" },
               { "key": "Content-Type", "value": "application/json" }
@@ -125,10 +231,32 @@
           }
         },
         {
+          "name": "List Properties",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/properties",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties"],
+              "query": [
+                { "key": "page", "value": "1", "disabled": true },
+                { "key": "per_page", "value": "10", "disabled": true },
+                { "key": "city", "value": "Jakarta", "disabled": true },
+                { "key": "type", "value": "kos", "disabled": true }
+              ]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
+          }
+        },
+        {
           "name": "Get Property Detail",
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/api/properties/1",
+            "url": {
+              "raw": "{{base_url}}/api/properties/{{property_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", "{{property_id}}"]
+            },
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
           }
         },
@@ -136,7 +264,11 @@
           "name": "Update Property",
           "request": {
             "method": "PUT",
-            "url": "{{base_url}}/api/properties/1",
+            "url": {
+              "raw": "{{base_url}}/api/properties/{{property_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", "{{property_id}}"]
+            },
             "header": [
               { "key": "Authorization", "value": "Bearer {{access_token}}" },
               { "key": "Content-Type", "value": "application/json" }
@@ -151,7 +283,11 @@
           "name": "Delete Property",
           "request": {
             "method": "DELETE",
-            "url": "{{base_url}}/api/properties/1",
+            "url": {
+              "raw": "{{base_url}}/api/properties/{{property_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", "{{property_id}}"]
+            },
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
           }
         }
@@ -161,25 +297,31 @@
       "name": "Rooms",
       "item": [
         {
-          "name": "List Rooms",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/properties/1/rooms?page=1&per_page=10&status=available",
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "per_page", "value": "10" },
-                { "key": "status", "value": "available" }
-              ]
-            },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
-          }
-        },
-        {
           "name": "Create Room",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.id) {",
+                  "        pm.collectionVariables.set('room_id', response.data.id);",
+                  "        console.log('Room ID saved: ' + response.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/api/properties/1/rooms",
+            "url": {
+              "raw": "{{base_url}}/api/properties/{{property_id}}/rooms",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", "{{property_id}}", "rooms"]
+            },
             "header": [
               { "key": "Authorization", "value": "Bearer {{access_token}}" },
               { "key": "Content-Type", "value": "application/json" }
@@ -191,10 +333,31 @@
           }
         },
         {
+          "name": "List Rooms",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/properties/{{property_id}}/rooms",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", "{{property_id}}", "rooms"],
+              "query": [
+                { "key": "page", "value": "1", "disabled": true },
+                { "key": "per_page", "value": "10", "disabled": true },
+                { "key": "status", "value": "available", "disabled": true }
+              ]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
+          }
+        },
+        {
           "name": "Get Room Detail",
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/api/rooms/1",
+            "url": {
+              "raw": "{{base_url}}/api/rooms/{{room_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rooms", "{{room_id}}"]
+            },
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
           }
         },
@@ -202,7 +365,11 @@
           "name": "Update Room",
           "request": {
             "method": "PUT",
-            "url": "{{base_url}}/api/rooms/1",
+            "url": {
+              "raw": "{{base_url}}/api/rooms/{{room_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rooms", "{{room_id}}"]
+            },
             "header": [
               { "key": "Authorization", "value": "Bearer {{access_token}}" },
               { "key": "Content-Type", "value": "application/json" }
@@ -217,7 +384,11 @@
           "name": "Delete Room",
           "request": {
             "method": "DELETE",
-            "url": "{{base_url}}/api/rooms/1",
+            "url": {
+              "raw": "{{base_url}}/api/rooms/{{room_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rooms", "{{room_id}}"]
+            },
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
           }
         }
@@ -227,40 +398,67 @@
       "name": "Bookings",
       "item": [
         {
-          "name": "List Bookings",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/bookings?page=1&per_page=10&status=pending",
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "per_page", "value": "10" },
-                { "key": "status", "value": "pending" }
-              ]
-            },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
-          }
-        },
-        {
           "name": "Create Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.id) {",
+                  "        pm.collectionVariables.set('booking_id', response.data.id);",
+                  "        console.log('Booking ID saved: ' + response.data.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/api/bookings",
+            "url": {
+              "raw": "{{base_url}}/api/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings"]
+            },
             "header": [
               { "key": "Authorization", "value": "Bearer {{access_token}}" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"roomId\": 1,\n  \"startDate\": \"2026-05-01\",\n  \"endDate\": \"2026-08-01\",\n  \"notes\": \"Mohon konfirmasi secepatnya\"\n}"
+              "raw": "{\n  \"roomId\": {{room_id}},\n  \"startDate\": \"2026-05-01\",\n  \"endDate\": \"2026-08-01\",\n  \"notes\": \"Mohon konfirmasi secepatnya\"\n}"
             }
+          }
+        },
+        {
+          "name": "List Bookings",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings"],
+              "query": [
+                { "key": "page", "value": "1", "disabled": true },
+                { "key": "per_page", "value": "10", "disabled": true },
+                { "key": "status", "value": "pending", "disabled": true }
+              ]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
           }
         },
         {
           "name": "Get Booking Detail",
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/api/bookings/1",
+            "url": {
+              "raw": "{{base_url}}/api/bookings/{{booking_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings", "{{booking_id}}"]
+            },
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
           }
         },
@@ -268,7 +466,11 @@
           "name": "Update Booking Status",
           "request": {
             "method": "PATCH",
-            "url": "{{base_url}}/api/bookings/1/status",
+            "url": {
+              "raw": "{{base_url}}/api/bookings/{{booking_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings", "{{booking_id}}", "status"]
+            },
             "header": [
               { "key": "Authorization", "value": "Bearer {{access_token}}" },
               { "key": "Content-Type", "value": "application/json" }
@@ -288,7 +490,11 @@
           "name": "Create Payment",
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/api/bookings/1/payments",
+            "url": {
+              "raw": "{{base_url}}/api/bookings/{{booking_id}}/payments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings", "{{booking_id}}", "payments"]
+            },
             "header": [
               { "key": "Authorization", "value": "Bearer {{access_token}}" },
               { "key": "Content-Type", "value": "application/json" }
@@ -303,7 +509,11 @@
           "name": "List Payments by Booking",
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/api/bookings/1/payments",
+            "url": {
+              "raw": "{{base_url}}/api/bookings/{{booking_id}}/payments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings", "{{booking_id}}", "payments"]
+            },
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
           }
         },
@@ -312,10 +522,12 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/bookings/payments/history?page=1&per_page=10",
+              "raw": "{{base_url}}/api/bookings/payments/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings", "payments", "history"],
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "per_page", "value": "10" }
+                { "key": "page", "value": "1", "disabled": true },
+                { "key": "per_page", "value": "10", "disabled": true }
               ]
             },
             "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
