@@ -24,8 +24,8 @@ const forwardBody = (bodyContent, srcReq) => {
 
 router.use(
   verifyToken,
-  proxy(services.booking.url, {
-    proxyReqPathResolver: (req) => `${services.booking.prefix}${req.url}`,
+  proxy(services.property.url, {
+    proxyReqPathResolver: (req) => `/api/rooms${req.url}`,
     proxyReqOptDecorator: injectUserHeaders,
     proxyReqBodyDecorator: forwardBody,
   })

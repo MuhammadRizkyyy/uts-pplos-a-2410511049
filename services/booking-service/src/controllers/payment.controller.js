@@ -56,7 +56,12 @@ const index = async (req, res) => {
 const history = async (req, res) => {
   try {
     const { page = 1, per_page = 10 } = req.query;
-    const { userId } = req.user;
+    const { userId, role } = req.user;
+
+    // Hanya tenant yang bisa akses riwayat pembayaran
+    if (role !== 'tenant') {
+      return res.status(403).json({ error: 'Only tenants can access payment history' });
+    }
 
     const result = await findHistory({
       page: parseInt(page),

@@ -6,9 +6,21 @@ const services = require('../config/services');
 const router = Router();
 
 const injectUserHeaders = (proxyReqOpts, srcReq) => {
-  proxyReqOpts.headers['X-User-Id'] = srcReq.user.userId;
-  proxyReqOpts.headers['X-User-Role'] = srcReq.user.role;
+  proxyReqOpts.headers = proxyReqOpts.headers || {};
+  proxyReqOpts.headers['X-User-Id'] = String(srcReq.user.userId);
+  proxyReqOpts.headers['X-User-Role'] = String(srcReq.user.role);
+  // Ensure Content-Type is set for JSON body methods
+  if (['POST', 'PUT', 'PATCH'].includes(srcReq.method)) {
+    proxyReqOpts.headers['Content-Type'] = 'application/json';
+  }
   return proxyReqOpts;
+};
+
+const forwardBody = (bodyContent, srcReq) => {
+  if (srcReq.body && Object.keys(srcReq.body).length > 0) {
+    return JSON.stringify(srcReq.body);
+  }
+  return bodyContent;
 };
 
 router.use(
@@ -16,6 +28,7 @@ router.use(
   proxy(services.property.url, {
     proxyReqPathResolver: (req) => `${services.property.prefix}${req.url}`,
     proxyReqOptDecorator: injectUserHeaders,
+    proxyReqBodyDecorator: forwardBody,
   })
 );
 

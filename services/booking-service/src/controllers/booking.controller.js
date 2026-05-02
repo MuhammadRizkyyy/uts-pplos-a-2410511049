@@ -21,7 +21,12 @@ const index = async (req, res) => {
 const store = async (req, res) => {
   try {
     const { roomId, startDate, endDate, notes } = req.body;
-    const { userId } = req.user;
+    const { userId, role } = req.user;
+
+    // Hanya tenant yang boleh membuat booking
+    if (role !== 'tenant') {
+      return res.status(403).json({ error: 'Only tenants can create bookings' });
+    }
 
     let roomData;
     try {
@@ -86,6 +91,13 @@ const show = async (req, res) => {
 const patchStatus = async (req, res) => {
   try {
     const { status } = req.body;
+    const { userId, role } = req.user;
+
+    // Hanya owner yang boleh mengubah status booking
+    if (role !== 'owner') {
+      return res.status(403).json({ error: 'Only owners can update booking status' });
+    }
+
     const validStatuses = ['pending', 'confirmed', 'active', 'completed', 'cancelled'];
 
     if (!validStatuses.includes(status)) {
@@ -97,8 +109,7 @@ const patchStatus = async (req, res) => {
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    const { userId, role } = req.user;
-    if (role === 'owner' && booking.owner_id != userId) {
+    if (booking.owner_id != userId) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 

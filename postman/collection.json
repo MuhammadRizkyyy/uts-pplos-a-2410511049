@@ -1,193 +1,432 @@
 {
   "info": {
     "name": "Sistem Manajemen Kos - UTS PPLOS",
-    "description": "Muhammad Rizky - 2410511049 - Kelas A",
+    "description": "Muhammad Rizky - 2410511049 - Kelas A\n\nMicroservices API untuk sistem manajemen kos.\n\n## Cara Penggunaan\n1. Jalankan semua service (Gateway :8000, Auth :8001, Property :8002, Booking :8003)\n2. Register akun owner dan tenant\n3. Login — token tersimpan otomatis ke variabel `access_token`\n4. Semua request yang butuh auth sudah pakai `{{access_token}}`\n\n## Variabel Koleksi\n- `base_url` — URL gateway (default: http://localhost:8000)\n- `access_token` — diisi otomatis saat login\n- `refresh_token` — diisi otomatis saat login\n- `property_id` — diisi otomatis saat create property\n- `room_id` — diisi otomatis saat create room\n- `booking_id` — diisi otomatis saat create booking",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "base_url", "value": "http://localhost:8000" },
-    { "key": "access_token", "value": "" },
-    { "key": "refresh_token", "value": "" },
-    { "key": "property_id", "value": "1" },
-    { "key": "room_id", "value": "1" },
-    { "key": "booking_id", "value": "1" }
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "property_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "room_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "booking_id",
+      "value": "1",
+      "type": "string"
+    }
   ],
   "item": [
     {
       "name": "Auth",
       "item": [
         {
-          "name": "Register",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    console.log('User registered successfully');",
-                  "    console.log('Please use Login request to get tokens');",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
+          "name": "Register (Owner)",
           "request": {
             "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "register"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
             },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Registrasi akun owner. Role: owner",
+            "auth": {
+              "type": "noauth"
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Muhammad Rizky\",\n  \"email\": \"rizky@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"tenant\"\n}"
+              "raw": "{\n  \"name\": \"Budi Santoso\",\n  \"email\": \"owner@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"owner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         },
         {
-          "name": "Login",
+          "name": "Register (Tenant)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Registrasi akun tenant. Role: tenant",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Muhammad Rizky\",\n  \"email\": \"tenant@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"tenant\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login (Owner)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login sebagai owner. Token tersimpan otomatis.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"owner@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "if (pm.response.code === 200) {",
-                  "    const response = pm.response.json();",
-                  "    if (response.accessToken) {",
-                  "        pm.collectionVariables.set('access_token', response.accessToken);",
-                  "        pm.collectionVariables.set('refresh_token', response.refreshToken);",
-                  "        console.log('✅ Tokens saved from login');",
-                  "        console.log('Access Token:', response.accessToken.substring(0, 20) + '...');",
+                  "    const r = pm.response.json();",
+                  "    if (r.accessToken) {",
+                  "        pm.collectionVariables.set('access_token', r.accessToken);",
+                  "        pm.collectionVariables.set('refresh_token', r.refreshToken);",
+                  "        console.log('Login owner berhasil - token tersimpan');",
                   "    }",
                   "}"
                 ],
                 "type": "text/javascript"
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "login"]
-            },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"rizky@example.com\",\n  \"password\": \"password123\"\n}"
-            }
-          }
+          ]
         },
         {
-          "name": "Get Me",
+          "name": "Login (Tenant)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login sebagai tenant. Token tersimpan otomatis.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"tenant@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const r = pm.response.json();",
+                  "    if (r.accessToken) {",
+                  "        pm.collectionVariables.set('access_token', r.accessToken);",
+                  "        pm.collectionVariables.set('refresh_token', r.refreshToken);",
+                  "        console.log('Login tenant berhasil - token tersimpan');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Current User (Me)",
           "request": {
             "method": "GET",
+            "header": [],
             "url": {
               "raw": "{{base_url}}/api/auth/me",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "me"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
             },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
-          }
+            "description": "Mendapatkan data user yang sedang login.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has user data\", () => {",
+                  "    const r = pm.response.json();",
+                  "    pm.expect(r).to.have.property('id');",
+                  "    pm.expect(r).to.have.property('email');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "Refresh Token",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    const response = pm.response.json();",
-                  "    if (response.accessToken) {",
-                  "        pm.collectionVariables.set('access_token', response.accessToken);",
-                  "        pm.collectionVariables.set('refresh_token', response.refreshToken);",
-                  "        console.log('✅ Access token refreshed');",
-                  "    }",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
             "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/auth/refresh",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "refresh"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh"
+              ]
             },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Perbarui access token menggunakan refresh token.",
+            "auth": {
+              "type": "noauth"
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
-        },
-        {
-          "name": "GitHub OAuth - Step 1: Get Authorization URL",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/auth/oauth/github",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "oauth", "github"]
-            },
-            "description": "⚠️ MANUAL STEP: Open this URL in browser to authorize with GitHub.\nAfter authorization, GitHub will redirect to callback URL with 'code' parameter.\nCopy the 'code' from URL and use it in Step 2."
-          }
-        },
-        {
-          "name": "GitHub OAuth - Step 2: Exchange Code for Token",
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "if (pm.response.code === 200) {",
-                  "    const response = pm.response.json();",
-                  "    if (response.accessToken) {",
-                  "        pm.collectionVariables.set('access_token', response.accessToken);",
-                  "        pm.collectionVariables.set('refresh_token', response.refreshToken);",
-                  "        console.log('✅ GitHub OAuth successful - Tokens saved');",
-                  "        console.log('User:', response.user.name, '(' + response.user.email + ')');",
+                  "    const r = pm.response.json();",
+                  "    if (r.accessToken) {",
+                  "        pm.collectionVariables.set('access_token', r.accessToken);",
+                  "        pm.collectionVariables.set('refresh_token', r.refreshToken);",
+                  "        console.log('Token diperbarui');",
                   "    }",
                   "}"
                 ],
                 "type": "text/javascript"
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/auth/oauth/github/callback?code=YOUR_GITHUB_CODE_HERE",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "oauth", "github", "callback"],
-              "query": [
-                { "key": "code", "value": "YOUR_GITHUB_CODE_HERE", "description": "Replace with actual code from GitHub redirect" }
-              ]
-            },
-            "description": "Replace YOUR_GITHUB_CODE_HERE with the actual code from GitHub OAuth redirect URL"
-          }
+          ]
         },
         {
           "name": "Logout",
           "request": {
             "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/auth/logout",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "logout"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
             },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Logout dan invalidasi refresh token.",
+            "auth": {
+              "type": "noauth"
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
+        },
+        {
+          "name": "GitHub OAuth - Redirect",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/oauth/github",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "oauth",
+                "github"
+              ]
+            },
+            "description": "Buka URL ini di browser untuk memulai GitHub OAuth flow.\nSetelah authorize, GitHub akan redirect ke callback URL dengan parameter `code`.\nSalin `code` dari URL dan gunakan di request 'GitHub OAuth - Callback'.",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "GitHub OAuth - Callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/oauth/github/callback?code=YOUR_GITHUB_CODE_HERE",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "oauth",
+                "github",
+                "callback"
+              ],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "YOUR_GITHUB_CODE_HERE",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Tukar authorization code dari GitHub dengan JWT tokens.\nGanti nilai `code` dengan kode yang didapat dari redirect GitHub.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const r = pm.response.json();",
+                  "    if (r.accessToken) {",
+                  "        pm.collectionVariables.set('access_token', r.accessToken);",
+                  "        pm.collectionVariables.set('refresh_token', r.refreshToken);",
+                  "        console.log('GitHub OAuth berhasil - token tersimpan');",
+                  "        console.log('User:', r.user?.name);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         }
       ]
     },
@@ -195,87 +434,270 @@
       "name": "Properties",
       "item": [
         {
+          "name": "List Properties",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/properties?page=1&per_page=10&city=Jakarta&type=kos&is_active=1&owner_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "per_page",
+                  "value": "10",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "Jakarta",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "kos",
+                  "description": "enum: kos, kontrakan, apartemen",
+                  "disabled": true
+                },
+                {
+                  "key": "is_active",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "owner_id",
+                  "value": "1",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Daftar semua properti dengan pagination dan filter.\nRole: Owner & Tenant",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has data array\", () => {",
+                  "    const r = pm.response.json();",
+                  "    pm.expect(r).to.have.property('data');",
+                  "    pm.expect(r.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
           "name": "Create Property",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties"
+              ]
+            },
+            "description": "Tambah properti baru.\nRole: Owner only",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Kos Melati Indah\",\n  \"address\": \"Jl. Melati No. 10, RT 02/RW 03\",\n  \"city\": \"Jakarta Selatan\",\n  \"province\": \"DKI Jakarta\",\n  \"type\": \"kos\",\n  \"description\": \"Kos nyaman dan strategis dekat kampus UI\",\n  \"facilities\": [\n    \"wifi\",\n    \"ac\",\n    \"parkir\",\n    \"dapur_bersama\"\n  ],\n  \"rules\": [\n    \"no_smoking\",\n    \"no_pets\",\n    \"tamu_sampai_jam_9\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "if (pm.response.code === 201) {",
-                  "    const response = pm.response.json();",
-                  "    if (response.data && response.data.id) {",
-                  "        pm.collectionVariables.set('property_id', response.data.id);",
-                  "        console.log('Property ID saved: ' + response.data.id);",
+                  "    const r = pm.response.json();",
+                  "    const id = r.data?.id || r.id;",
+                  "    if (id) {",
+                  "        pm.collectionVariables.set('property_id', String(id));",
+                  "        console.log('Property ID tersimpan: ' + id);",
                   "    }",
-                  "}"
+                  "}",
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));"
                 ],
                 "type": "text/javascript"
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/properties",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties"]
-            },
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Kos Melati\",\n  \"address\": \"Jl. Melati No. 10\",\n  \"city\": \"Jakarta Selatan\",\n  \"province\": \"DKI Jakarta\",\n  \"type\": \"kos\",\n  \"description\": \"Kos nyaman dekat kampus\",\n  \"facilities\": [\"wifi\", \"ac\", \"parkir\"]\n}"
-            }
-          }
-        },
-        {
-          "name": "List Properties",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/properties",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties"],
-              "query": [
-                { "key": "page", "value": "1", "disabled": true },
-                { "key": "per_page", "value": "10", "disabled": true },
-                { "key": "city", "value": "Jakarta", "disabled": true },
-                { "key": "type", "value": "kos", "disabled": true }
-              ]
-            },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
-          }
+          ]
         },
         {
           "name": "Get Property Detail",
           "request": {
             "method": "GET",
+            "header": [],
             "url": {
               "raw": "{{base_url}}/api/properties/{{property_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", "{{property_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "{{property_id}}"
+              ]
             },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
+            "description": "Detail properti berdasarkan ID.\nRole: Owner & Tenant",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has property data\", () => {",
+                  "    const r = pm.response.json();",
+                  "    pm.expect(r).to.have.property('id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Property (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/{{property_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "{{property_id}}"
+              ]
+            },
+            "description": "Update seluruh data properti.\nRole: Owner (hanya miliknya)",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Kos Melati Indah Updated\",\n  \"address\": \"Jl. Melati No. 10, RT 02/RW 03\",\n  \"city\": \"Jakarta Selatan\",\n  \"province\": \"DKI Jakarta\",\n  \"type\": \"kos\",\n  \"description\": \"Kos nyaman, strategis, dekat kampus dan mall\",\n  \"facilities\": [\n    \"wifi\",\n    \"ac\",\n    \"parkir\",\n    \"dapur_bersama\",\n    \"laundry\"\n  ],\n  \"rules\": [\n    \"no_smoking\",\n    \"no_pets\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Update Property",
+          "name": "Update Property (PATCH)",
           "request": {
-            "method": "PUT",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/properties/{{property_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", "{{property_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "{{property_id}}"
+              ]
             },
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
+            "description": "Update sebagian data properti.\nRole: Owner (hanya miliknya)",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"description\": \"Kos nyaman, strategis, dekat kampus dan mall\"\n}"
+              "raw": "{\n  \"description\": \"Kos nyaman, strategis, dekat kampus dan mall\",\n  \"is_active\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         },
@@ -283,13 +705,43 @@
           "name": "Delete Property",
           "request": {
             "method": "DELETE",
+            "header": [],
             "url": {
               "raw": "{{base_url}}/api/properties/{{property_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", "{{property_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "{{property_id}}"
+              ]
             },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
-          }
+            "description": "Hapus properti.\nRole: Owner (hanya miliknya)",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200 or 204\", () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         }
       ]
     },
@@ -297,86 +749,265 @@
       "name": "Rooms",
       "item": [
         {
+          "name": "List Rooms by Property",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/properties/{{property_id}}/rooms?page=1&per_page=10&status=available&type=standard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "{{property_id}}",
+                "rooms"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "per_page",
+                  "value": "10",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "available",
+                  "description": "enum: available, occupied, maintenance",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "standard",
+                  "description": "enum: standard, deluxe, suite",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Daftar kamar dalam properti tertentu.\nRole: Owner & Tenant",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has data array\", () => {",
+                  "    const r = pm.response.json();",
+                  "    pm.expect(r).to.have.property('data');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
           "name": "Create Room",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/{{property_id}}/rooms",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "{{property_id}}",
+                "rooms"
+              ]
+            },
+            "description": "Tambah kamar baru ke properti.\nRole: Owner (hanya miliknya)",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"room_number\": \"A01\",\n  \"type\": \"standard\",\n  \"price_per_month\": 1500000,\n  \"size_sqm\": 12.5,\n  \"facilities\": [\n    \"kasur\",\n    \"lemari\",\n    \"meja_belajar\",\n    \"kipas_angin\"\n  ],\n  \"description\": \"Kamar standar lantai 1, hadap timur\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "if (pm.response.code === 201) {",
-                  "    const response = pm.response.json();",
-                  "    if (response.data && response.data.id) {",
-                  "        pm.collectionVariables.set('room_id', response.data.id);",
-                  "        console.log('Room ID saved: ' + response.data.id);",
+                  "    const r = pm.response.json();",
+                  "    const id = r.data?.id || r.id;",
+                  "    if (id) {",
+                  "        pm.collectionVariables.set('room_id', String(id));",
+                  "        console.log('Room ID tersimpan: ' + id);",
                   "    }",
-                  "}"
+                  "}",
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));"
                 ],
                 "type": "text/javascript"
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/properties/{{property_id}}/rooms",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", "{{property_id}}", "rooms"]
-            },
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"room_number\": \"A01\",\n  \"type\": \"standard\",\n  \"price_per_month\": 1500000,\n  \"size_sqm\": 12,\n  \"facilities\": [\"kasur\", \"lemari\", \"meja\"],\n  \"description\": \"Kamar standar lantai 1\"\n}"
-            }
-          }
-        },
-        {
-          "name": "List Rooms",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/properties/{{property_id}}/rooms",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", "{{property_id}}", "rooms"],
-              "query": [
-                { "key": "page", "value": "1", "disabled": true },
-                { "key": "per_page", "value": "10", "disabled": true },
-                { "key": "status", "value": "available", "disabled": true }
-              ]
-            },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
-          }
+          ]
         },
         {
           "name": "Get Room Detail",
           "request": {
             "method": "GET",
+            "header": [],
             "url": {
               "raw": "{{base_url}}/api/rooms/{{room_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "rooms", "{{room_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{room_id}}"
+              ]
             },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
+            "description": "Detail kamar berdasarkan ID.\nRole: Owner & Tenant",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has room data\", () => {",
+                  "    const r = pm.response.json();",
+                  "    pm.expect(r).to.have.property('id');",
+                  "    pm.expect(r).to.have.property('price_per_month');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Room (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/rooms/{{room_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{room_id}}"
+              ]
+            },
+            "description": "Update seluruh data kamar.\nRole: Owner (hanya miliknya)",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"room_number\": \"A01\",\n  \"type\": \"deluxe\",\n  \"price_per_month\": 1800000,\n  \"size_sqm\": 14,\n  \"facilities\": [\n    \"kasur\",\n    \"lemari\",\n    \"meja_belajar\",\n    \"ac\",\n    \"kamar_mandi_dalam\"\n  ],\n  \"status\": \"available\",\n  \"description\": \"Kamar deluxe lantai 1 dengan kamar mandi dalam\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Update Room",
+          "name": "Update Room (PATCH)",
           "request": {
-            "method": "PUT",
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/rooms/{{room_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "rooms", "{{room_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{room_id}}"
+              ]
             },
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
+            "description": "Update sebagian data kamar.\nRole: Owner (hanya miliknya)",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"maintenance\",\n  \"price_per_month\": 1600000\n}"
+              "raw": "{\n  \"status\": \"maintenance\",\n  \"price_per_month\": 1600000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           }
         },
@@ -384,13 +1015,43 @@
           "name": "Delete Room",
           "request": {
             "method": "DELETE",
+            "header": [],
             "url": {
               "raw": "{{base_url}}/api/rooms/{{room_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "rooms", "{{room_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "rooms",
+                "{{room_id}}"
+              ]
             },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
-          }
+            "description": "Hapus kamar.\nRole: Owner (hanya miliknya)",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200 or 204\", () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         }
       ]
     },
@@ -398,88 +1059,226 @@
       "name": "Bookings",
       "item": [
         {
+          "name": "List Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/bookings?page=1&per_page=10&status=pending",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "per_page",
+                  "value": "10",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "enum: pending, confirmed, active, completed, cancelled",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Daftar booking.\n- Tenant: hanya booking miliknya\n- Owner: hanya booking propertinya",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has data\", () => {",
+                  "    const r = pm.response.json();",
+                  "    pm.expect(r).to.have.property('data');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
           "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/bookings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "description": "Buat booking baru.\nRole: Tenant only\n\nStatus awal: pending\nTotal harga dihitung otomatis berdasarkan harga kamar × jumlah bulan.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": {{room_id}},\n  \"startDate\": \"2026-06-01\",\n  \"endDate\": \"2026-09-01\",\n  \"notes\": \"Mohon konfirmasi secepatnya\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "if (pm.response.code === 201) {",
-                  "    const response = pm.response.json();",
-                  "    if (response.data && response.data.id) {",
-                  "        pm.collectionVariables.set('booking_id', response.data.id);",
-                  "        console.log('Booking ID saved: ' + response.data.id);",
+                  "    const r = pm.response.json();",
+                  "    const id = r.data?.id || r.id;",
+                  "    if (id) {",
+                  "        pm.collectionVariables.set('booking_id', String(id));",
+                  "        console.log('Booking ID tersimpan: ' + id);",
                   "    }",
-                  "}"
+                  "}",
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));"
                 ],
                 "type": "text/javascript"
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/bookings",
-              "host": ["{{base_url}}"],
-              "path": ["api", "bookings"]
-            },
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"roomId\": {{room_id}},\n  \"startDate\": \"2026-05-01\",\n  \"endDate\": \"2026-08-01\",\n  \"notes\": \"Mohon konfirmasi secepatnya\"\n}"
-            }
-          }
-        },
-        {
-          "name": "List Bookings",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/bookings",
-              "host": ["{{base_url}}"],
-              "path": ["api", "bookings"],
-              "query": [
-                { "key": "page", "value": "1", "disabled": true },
-                { "key": "per_page", "value": "10", "disabled": true },
-                { "key": "status", "value": "pending", "disabled": true }
-              ]
-            },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
-          }
+          ]
         },
         {
           "name": "Get Booking Detail",
           "request": {
             "method": "GET",
+            "header": [],
             "url": {
               "raw": "{{base_url}}/api/bookings/{{booking_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "bookings", "{{booking_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{booking_id}}"
+              ]
             },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
-          }
+            "description": "Detail booking berdasarkan ID.\nRole: Owner (propertinya) & Tenant (miliknya)",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has booking data\", () => {",
+                  "    const r = pm.response.json();",
+                  "    pm.expect(r).to.have.property('id');",
+                  "    pm.expect(r).to.have.property('status');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "Update Booking Status",
           "request": {
             "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/bookings/{{booking_id}}/status",
-              "host": ["{{base_url}}"],
-              "path": ["api", "bookings", "{{booking_id}}", "status"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{booking_id}}",
+                "status"
+              ]
             },
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
+            "description": "Update status booking.\nRole: Owner (hanya propertinya)\n\nAlur status:\npending → confirmed → active → completed\npending → cancelled",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"confirmed\"\n}"
+              "raw": "{\n  \"status\": \"confirmed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         }
       ]
     },
@@ -490,47 +1289,252 @@
           "name": "Create Payment",
           "request": {
             "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/api/bookings/{{booking_id}}/payments",
-              "host": ["{{base_url}}"],
-              "path": ["api", "bookings", "{{booking_id}}", "payments"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{booking_id}}",
+                "payments"
+              ]
             },
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
+            "description": "Buat pembayaran untuk booking.\nRole: Tenant (hanya booking miliknya)\n\nMethod: transfer, cash, ewallet\nStatus awal: pending (menunggu verifikasi owner)",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": 1500000,\n  \"method\": \"transfer\",\n  \"notes\": \"Pembayaran bulan Mei 2026\"\n}"
+              "raw": "{\n  \"amount\": 4500000,\n  \"method\": \"transfer\",\n  \"notes\": \"Transfer BCA - 3 bulan (Juni-Agustus 2026)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Payment created\", () => {",
+                  "    const r = pm.response.json();",
+                  "    pm.expect(r).to.have.property('id');",
+                  "    pm.expect(r).to.have.property('status');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         },
         {
           "name": "List Payments by Booking",
           "request": {
             "method": "GET",
+            "header": [],
             "url": {
               "raw": "{{base_url}}/api/bookings/{{booking_id}}/payments",
-              "host": ["{{base_url}}"],
-              "path": ["api", "bookings", "{{booking_id}}", "payments"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{booking_id}}",
+                "payments"
+              ]
             },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
+            "description": "Daftar pembayaran untuk booking tertentu.\nRole: Owner (propertinya) & Tenant (booking miliknya)",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response is array\", () => {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Payment History (Tenant)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/bookings/payments/history?page=1&per_page=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "payments",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "per_page",
+                  "value": "10",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Riwayat semua pembayaran milik tenant yang login.\nRole: Tenant only",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response has data\", () => {",
+                  "    const r = pm.response.json();",
+                  "    pm.expect(r).to.have.property('data');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health Checks",
+      "item": [
+        {
+          "name": "Gateway Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Cek status API Gateway",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
-          "name": "Payment History",
+          "name": "Auth Service Health",
           "request": {
             "method": "GET",
+            "header": [],
             "url": {
-              "raw": "{{base_url}}/api/bookings/payments/history",
-              "host": ["{{base_url}}"],
-              "path": ["api", "bookings", "payments", "history"],
-              "query": [
-                { "key": "page", "value": "1", "disabled": true },
-                { "key": "per_page", "value": "10", "disabled": true }
+              "raw": "http://localhost:8001/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8001",
+              "path": [
+                "health"
               ]
             },
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }]
+            "description": "Cek status Auth Service (direct)",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Property Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8002/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8002",
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Cek status Property Service (direct)",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Booking Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8003/health",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8003",
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Cek status Booking Service (direct)",
+            "auth": {
+              "type": "noauth"
+            }
           }
         }
       ]

@@ -70,6 +70,12 @@ class PropertyController extends ResourceController
     public function update($id = null)
     {
         $userId = $this->request->getHeaderLine('X-User-Id');
+        $role   = $this->request->getHeaderLine('X-User-Role');
+
+        if ($role !== 'owner') {
+            return $this->failForbidden('Only owners can update properties');
+        }
+
         $data   = $this->request->getJSON(true) ?? $this->request->getRawInput();
         $result = $this->service->update((int) $id, $data, $userId);
 
@@ -83,6 +89,12 @@ class PropertyController extends ResourceController
     public function delete($id = null)
     {
         $userId = $this->request->getHeaderLine('X-User-Id');
+        $role   = $this->request->getHeaderLine('X-User-Role');
+
+        if ($role !== 'owner') {
+            return $this->failForbidden('Only owners can delete properties');
+        }
+
         $result = $this->service->delete((int) $id, $userId);
 
         if (isset($result['notFound']))  return $this->failNotFound('Property not found');

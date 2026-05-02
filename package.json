@@ -7,6 +7,12 @@
   "scripts": {
     "docs": "npx @scalar/cli reference docs/openapi.yaml --port 5050",
     "docs:open": "npm run docs",
+    "migrate:all": "npm run migrate:auth && npm run migrate:booking && npm run migrate:property",
+    "migrate:auth": "mysql -u root < services/auth-service/src/database/migrations/001_create_users_table.sql",
+    "migrate:booking": "mysql -u root < services/booking-service/src/database/migrations/001_create_bookings_payments.sql",
+    "migrate:property": "cd services/property-service && php spark migrate",
+    "seed:all": "php run-seeds.php",
+    "db:setup": "npm run migrate:all && npm run seed:all",
     "start:auth": "cd services/auth-service && npm run dev",
     "start:property": "cd services/property-service && php spark serve --port=8002",
     "start:booking": "cd services/booking-service && npm run dev",

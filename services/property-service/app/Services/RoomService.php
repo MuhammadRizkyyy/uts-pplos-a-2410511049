@@ -42,12 +42,14 @@ class RoomService
         return $this->roomModel->decodeJson($room);
     }
 
-    public function create(int $propertyId, array $data, string $userId): array
+    public function create(int $propertyId, array $data, string $userId, string $userRole = ''): array
     {
         $property = $this->propertyModel->find($propertyId);
         if (!$property) return ['notFound' => true];
 
-        if ((string) $property['owner_id'] !== $userId) return ['forbidden' => true];
+        if ($userRole !== 'admin' && (string) $property['owner_id'] !== $userId) {
+            return ['forbidden' => true];
+        }
 
         $data['property_id'] = $propertyId;
         $data['status']      = 'available';
@@ -62,13 +64,15 @@ class RoomService
         return ['room' => $this->roomModel->decodeJson($this->roomModel->find($id))];
     }
 
-    public function update(int $id, array $data, string $userId): array
+    public function update(int $id, array $data, string $userId, string $userRole = ''): array
     {
         $room = $this->roomModel->find($id);
         if (!$room) return ['notFound' => true];
 
         $property = $this->propertyModel->find($room['property_id']);
-        if ((string) $property['owner_id'] !== $userId) return ['forbidden' => true];
+        if ($userRole !== 'admin' && (string) $property['owner_id'] !== $userId) {
+            return ['forbidden' => true];
+        }
 
         if (!$this->roomModel->update($id, $data)) {
             return ['errors' => $this->roomModel->errors()];
@@ -77,13 +81,15 @@ class RoomService
         return ['room' => $this->roomModel->decodeJson($this->roomModel->find($id))];
     }
 
-    public function delete(int $id, string $userId): array
+    public function delete(int $id, string $userId, string $userRole = ''): array
     {
         $room = $this->roomModel->find($id);
         if (!$room) return ['notFound' => true];
 
         $property = $this->propertyModel->find($room['property_id']);
-        if ((string) $property['owner_id'] !== $userId) return ['forbidden' => true];
+        if ($userRole !== 'admin' && (string) $property['owner_id'] !== $userId) {
+            return ['forbidden' => true];
+        }
 
         $this->roomModel->delete($id);
         return ['deleted' => true];

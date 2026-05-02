@@ -24,7 +24,7 @@ class RoomModel extends Model
 
     protected $validationRules = [
         'room_number'     => 'required|max_length[20]',
-        'type'            => 'required|in_list[standard,deluxe,suite]',
+        'type'            => 'required|max_length[50]',
         'price_per_month' => 'required|decimal|greater_than[0]',
     ];
 

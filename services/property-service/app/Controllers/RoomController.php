@@ -41,9 +41,15 @@ class RoomController extends ResourceController
 
     public function create($propertyId = null)
     {
-        $userId = $this->request->getHeaderLine('X-User-Id');
+        $userId   = $this->request->getHeaderLine('X-User-Id');
+        $userRole = $this->request->getHeaderLine('X-User-Role');
+
+        if ($userRole !== 'owner') {
+            return $this->failForbidden('Only owners can add rooms');
+        }
+
         $data   = $this->request->getJSON(true) ?? $this->request->getPost();
-        $result = $this->service->create((int) $propertyId, $data, $userId);
+        $result = $this->service->create((int) $propertyId, $data, $userId, $userRole);
 
         if (isset($result['notFound']))  return $this->failNotFound('Property not found');
         if (isset($result['forbidden'])) return $this->failForbidden('Forbidden');
@@ -65,9 +71,15 @@ class RoomController extends ResourceController
 
     public function update($id = null)
     {
-        $userId = $this->request->getHeaderLine('X-User-Id');
+        $userId   = $this->request->getHeaderLine('X-User-Id');
+        $userRole = $this->request->getHeaderLine('X-User-Role');
+
+        if ($userRole !== 'owner') {
+            return $this->failForbidden('Only owners can update rooms');
+        }
+
         $data   = $this->request->getJSON(true) ?? $this->request->getRawInput();
-        $result = $this->service->update((int) $id, $data, $userId);
+        $result = $this->service->update((int) $id, $data, $userId, $userRole);
 
         if (isset($result['notFound']))  return $this->failNotFound('Room not found');
         if (isset($result['forbidden'])) return $this->failForbidden('Forbidden');
@@ -78,8 +90,14 @@ class RoomController extends ResourceController
 
     public function delete($id = null)
     {
-        $userId = $this->request->getHeaderLine('X-User-Id');
-        $result = $this->service->delete((int) $id, $userId);
+        $userId   = $this->request->getHeaderLine('X-User-Id');
+        $userRole = $this->request->getHeaderLine('X-User-Role');
+
+        if ($userRole !== 'owner') {
+            return $this->failForbidden('Only owners can delete rooms');
+        }
+
+        $result = $this->service->delete((int) $id, $userId, $userRole);
 
         if (isset($result['notFound']))  return $this->failNotFound('Room not found');
         if (isset($result['forbidden'])) return $this->failForbidden('Forbidden');
